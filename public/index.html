@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Client</title>
+        <link rel="stylesheet"
+            href="https://unpkg.com/xterm@4.18.0/css/xterm.css"/>
+        <link rel="stylesheet" href="./style.css">
+        <script src="https://unpkg.com/xterm@4.18.0/lib/xterm.js"></script>
+        <script type="text/javascript"
+            src="https://unpkg.com/colyseus.js@^0.14.0/dist/colyseus.js"></script>
+    </head>
+    <body>
+        <div id="terminal"></div>
+        <div id="chatBox">
+            <div><input id="inputMessage" type="text" placeholder="Post text to chatroom"></div>
+            <div><input id="press" type="button" value="post"></div>
+        </div>
+        <script>
+            var term = new Terminal({
+                cols: 190,
+                rows: 10,
+                useStyle: true,
+                screenKeys: true,
+                cursorBlink: true,
+                scrollback: 1000,
+                fontFamily: 'monospace'
+            });
+            term.open(document.getElementById('terminal'));
+
+            const url = "ws://localhost:8080";
+            const roomname = "yash's chatroom";
+            
+            term.writeln("Connecting to " + url + "...");
+            const client = new Colyseus.Client(url);
+
+            term.writeln("joining  " + roomname + "...");
+            const room = client.joinOrCreate(roomname).then(room =>{
+                term.writeln("Connected to " + room.name + "!");
+
+                room.onMessage("message", message => {
+                    term.writeln(message);
+                });
+                document.getElementById("press").onclick = function() {
+                    var message = document.getElementById("inputMessage").value;
+                    room.send("message", message);
+                    document.getElementById("inputMessage").value = "";
+                }
+                
+            });
+            
+
+            
+        </script>
+    </body>
+
+</html>
